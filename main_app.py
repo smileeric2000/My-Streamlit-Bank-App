@@ -19,7 +19,7 @@ import re
 
 blank_profile_img = r"C:\Users\USER\data_science\bank_project\blank_profile.jpeg"
 
-st.set_page_config(page_title="Diamond Bank (Demo)", layout="centered", page_icon=":bank:")
+st.set_page_config(page_title="Diamond Bank (Demo)", layout="centered", page_icon=":bank:", initial_sidebar_state="collapsed")
 
 #initialize Database
 
@@ -40,6 +40,50 @@ def back_to_home():
 # ------------------------------------------------
 
 fe.inject_global_css()
+
+st.markdown("""
+<style>
+
+/* ----------- MOBILE FIRST ----------- */
+@media (max-width: 768px) {
+
+    .block-container {
+        padding: 1rem 0.8rem !important;
+    }
+
+    div[data-testid="column"] {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+    }
+
+    button[kind="primary"],
+    button[kind="secondary"] {
+        width: 100% !important;
+    }
+
+    form {
+        padding: 0 !important;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    section[data-testid="stSidebar"] {
+        display: none;
+    }
+}
+
+/* ----------- DESKTOP ----------- */
+@media (min-width: 769px) {
+    section[data-testid="stSidebar"] {
+        display: block;
+    }
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 #HELPERS
 def register_user_form():
