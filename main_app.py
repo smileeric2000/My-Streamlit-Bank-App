@@ -22,40 +22,27 @@ blank_profile_img = r"C:\Users\USER\data_science\bank_project\blank_profile.jpeg
 def inject_responsive_css():
     st.markdown("""
     <style>
-    /* Force columns to stay in one row on small screens */
     @media (max-width: 900px) {
 
-      /* Streamlit columns row container (different versions use different wrappers) */
-      div[data-testid="stHorizontalBlock"],
-      div[data-testid="stColumns"] {
+      /* Streamlit columns row wrapper (the flex is often on the immediate child) */
+      div[data-testid="stHorizontalBlock"] > div,
+      div[data-testid="stColumns"] > div {
+        display: flex !important;
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
         gap: 0.6rem !important;
         -webkit-overflow-scrolling: touch;
       }
 
-      /* Some versions wrap the flex row one level deeper */
-      div[data-testid="stHorizontalBlock"] > div {
-        flex-wrap: nowrap !important;
-      }
-
-      /* IMPORTANT:
-         Streamlit often sets columns to width: 100% on mobile.
-         You must override width/min-width/flex-basis, not just flex-wrap.
-      */
-      div[data-testid="column"] {
+      /* IMPORTANT: override Streamlit mobile "full width" column behavior */
+      div[data-testid="stHorizontalBlock"] div[data-testid="column"],
+      div[data-testid="stColumns"] div[data-testid="column"] {
         width: auto !important;
-        min-width: 0 !important;
         flex: 0 0 auto !important;
+        min-width: 240px !important;  /* forces horizontal row, scrolls if needed */
       }
 
-      /* Make all 3-column rows behave like 3 across (scroll if screen too small) */
-      div[data-testid="stHorizontalBlock"] div[data-testid="column"] {
-        flex-basis: 33.333% !important;
-        min-width: 33.333% !important;
-      }
-
-      /* Buttons compact + fill column */
+      /* Make buttons fit nicely inside smaller columns */
       div[data-testid="stButton"] > button {
         width: 100% !important;
         font-size: 0.85rem !important;
@@ -63,7 +50,6 @@ def inject_responsive_css():
         white-space: nowrap !important;
       }
 
-      /* Images scale nicely */
       img {
         max-width: 100% !important;
         height: auto !important;
