@@ -22,41 +22,49 @@ blank_profile_img = r"C:\Users\USER\data_science\bank_project\blank_profile.jpeg
 def inject_responsive_css():
     st.markdown("""
     <style>
-    /* Make Streamlit column rows behave like a single horizontal flex row on small screens */
-    @media (max-width: 640px) {
+    /* Force columns to stay in one row on small screens */
+    @media (max-width: 900px) {
 
-      /* Any st.columns() row */
-      div[data-testid="stHorizontalBlock"]{
-        flex-wrap: nowrap !important;      /* prevent stacking */
-        overflow-x: auto !important;       /* allow scroll if needed */
-        gap: 0.5rem !important;
-        padding-bottom: 0.25rem;
+      /* Streamlit columns row container (different versions use different wrappers) */
+      div[data-testid="stHorizontalBlock"],
+      div[data-testid="stColumns"] {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        gap: 0.6rem !important;
+        -webkit-overflow-scrolling: touch;
       }
 
-      /* Each column */
-      div[data-testid="column"]{
-        flex: 0 0 auto !important;         /* don't shrink to 0 */
+      /* Some versions wrap the flex row one level deeper */
+      div[data-testid="stHorizontalBlock"] > div {
+        flex-wrap: nowrap !important;
       }
 
-      /* Action row: 3 columns */
-      .action-row div[data-testid="column"]{
-        min-width: 32% !important;         /* ~3 per row */
+      /* IMPORTANT:
+         Streamlit often sets columns to width: 100% on mobile.
+         You must override width/min-width/flex-basis, not just flex-wrap.
+      */
+      div[data-testid="column"] {
+        width: auto !important;
+        min-width: 0 !important;
+        flex: 0 0 auto !important;
       }
 
-      /* Icon row: 4 columns */
-      .icon-row div[data-testid="column"]{
-        min-width: 24% !important;         /* ~4 per row */
+      /* Make all 3-column rows behave like 3 across (scroll if screen too small) */
+      div[data-testid="stHorizontalBlock"] div[data-testid="column"] {
+        flex-basis: 33.333% !important;
+        min-width: 33.333% !important;
       }
 
-      /* Buttons: make them compact and full-width inside their column */
-      div[data-testid="stButton"] > button{
+      /* Buttons compact + fill column */
+      div[data-testid="stButton"] > button {
         width: 100% !important;
-        font-size: 0.8rem !important;
-        padding: 0.45rem 0.5rem !important;
+        font-size: 0.85rem !important;
+        padding: 0.45rem 0.55rem !important;
+        white-space: nowrap !important;
       }
 
-      /* Images: keep them from looking huge */
-      img{
+      /* Images scale nicely */
+      img {
         max-width: 100% !important;
         height: auto !important;
       }
@@ -65,7 +73,7 @@ def inject_responsive_css():
     """, unsafe_allow_html=True)
 
 st.set_page_config(page_title="Diamond Bank (Demo)", layout="wide", page_icon=":bank:")
-inject_responsive_css()
+
 #initialize Database
 
 init_db()
@@ -89,6 +97,8 @@ def back_to_home():
 # ------------------------------------------------
 
 fe.inject_global_css()
+inject_responsive_css()
+
 
 #HELPERS
 def register_user_form():
