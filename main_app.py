@@ -19,68 +19,11 @@ import re
 
 blank_profile_img = r"C:\Users\USER\data_science\bank_project\blank_profile.jpeg"
 
-import streamlit as st
-
-def force_desktop_layout_on_mobile():
-    st.markdown(
-        """
-        <style>
-        /* Remove extra side padding so we get more usable width */
-        .block-container {
-            padding-top: 1.2rem;
-            padding-bottom: 1.2rem;
-        }
-
-        /* MOBILE: keep rows in one line + scale down to fit */
-        @media (max-width: 768px) {
-
-          /* Keep column rows from stacking */
-          div[data-testid="stHorizontalBlock"]{
-            flex-wrap: nowrap !important;
-            gap: 0.55rem !important;
-          }
-
-          /* Let columns shrink instead of forcing wrap */
-          div[data-testid="column"]{
-            min-width: 0 !important;
-            flex: 1 1 0 !important;
-          }
-
-          /* Scale the whole page down so 3/4 columns still fit */
-          .block-container{
-            transform: scale(0.85);
-            transform-origin: top left;
-            width: calc(100% / 0.85);
-          }
-
-          /* Buttons smaller so they don't force wrap */
-          button[kind]{
-            padding: 0.35rem 0.5rem !important;
-            font-size: 0.78rem !important;
-            line-height: 1.05 !important;
-            white-space: nowrap !important;
-          }
-
-          /* Images don't overflow their column */
-          img{
-            max-width: 100% !important;
-            height: auto !important;
-          }
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-st.set_page_config(page_title="Diamond Bank (Demo)", layout="wide", page_icon=":bank:")
+st.set_page_config(page_title="Diamond Bank (Demo)", layout="centered", page_icon=":bank:")
 
 #initialize Database
 
 init_db()
-
-
-
-
 
 #PAGE CONTROLLER
 if "page" not in st.session_state:
@@ -97,10 +40,8 @@ def back_to_home():
 # ------------------------------------------------
 
 fe.inject_global_css()
-force_desktop_layout_on_mobile()
 
-
-#HELPERS
+# ---------------- HELPERS ----------------
 def register_user_form():
     st.subheader("Create Account")
 
@@ -125,7 +66,7 @@ def register_user_form():
         submit = st.form_submit_button("Register")
 
         if submit:
-            #Validation: digits only & exactly 10 characters
+            # 🔒 Validation: digits only & exactly 10 chars
             if not account_num.isdigit():
                 st.error("Account number must contain digits only.")
                 return
@@ -142,10 +83,10 @@ def register_user_form():
                 st.error("Password must be at least 4 characters.")
                 return
 
-            #Convert AFTER validation
+            # ✅ Convert AFTER validation
             account_num = int(account_num)
 
-            #Proceed with DB creation
+            # 🔥 Proceed with DB creation
             success = create_user(
                 account_num=account_num,
                 account_name=account_name,
@@ -167,14 +108,14 @@ def login_form():
 
         if submitted:
             with st.spinner("Logging in..."):
-                time.sleep(4)  #simulate network / DB delay
+                time.sleep(4)  # simulate network / DB delay
             user = authenticate(int(acc_num), str(password).strip())
             if user:
                 st.session_state.user = user
                 st.session_state.logged_in = True
                 st.success("Login successful!")
                 time.sleep(2)
-                #Redirect to navigation guide sub-page
+                # Redirect to navigation guide sub-page
                 st.session_state.page = None
                 go_to("navigation")
                 
@@ -186,18 +127,21 @@ def login_form():
 
 
 def navigation():
-    #Function that teaches user how to navigate through the app
+    """
+    Full-screen navigation onboarding page with background from assets/
+    Only shows Home after user clicks "Got it!".
+    """
 
-    #IMAGE PATH
+    # ---------------- IMAGE PATH ----------------
     nav_img_path = Path("assets/navigation_dark.png")
 
     if nav_img_path.exists():
-        #Encode image to base64
+        # Encode image to base64
         with open(nav_img_path, "rb") as f:
             data = f.read()
             data_url = base64.b64encode(data).decode()
 
-        #Inject CSS for full background
+        # Inject CSS for full background
         st.markdown(
             f"""
             <style>
@@ -234,7 +178,7 @@ def navigation():
             unsafe_allow_html=True
         )
 
-       
+        # Full page container
         st.markdown(
             """
             <div class="full-bg">
@@ -253,7 +197,7 @@ def navigation():
         )
 
     else:
-        #Fallback if image not found
+        # Fallback if image not found
         st.markdown(
             "### 👋 Welcome to Diamond Bank\nUse the sidebar to navigate through the app."
         )
@@ -416,98 +360,33 @@ def more_page(user):
 
 
 #_______ HOME PAGE ____________
-
-
-def inject_home_grid_css():
-    st.markdown("""
-    <style>
-    .db-row {
-      display: flex;
-      gap: 12px;
-      width: 100%;
-      overflow-x: auto;
-      padding: 6px 2px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .db-card {
-      flex: 0 0 auto;
-      min-width: 140px;
-      border-radius: 14px;
-      padding: 12px 10px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(0,0,0,0.18);
-      backdrop-filter: blur(8px);
-      color: white;
-      text-align: center;
-      cursor: pointer;
-      user-select: none;
-    }
-    .db-card:hover { transform: translateY(-1px); }
-    .db-card img { width: 38px; height: 38px; object-fit: contain; display:block; margin: 0 auto 8px; }
-    .db-card .lbl { font-size: 0.9rem; font-weight: 600; white-space: nowrap; }
-
-    .db-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(120px, 1fr));
-      gap: 12px;
-      width: 100%;
-      overflow-x: auto;
-      padding-bottom: 6px;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    @media (max-width: 640px){
-      .db-grid {
-        grid-template-columns: repeat(4, 120px); /* stays 4 across, scrolls horizontally */
-      }
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-
-def handle_nav_query_param():
-    nav = st.query_params.get("nav")
-    if nav:
-        st.query_params.clear()
-        go_to(nav)
-
-
 def home_page(user):
-
-    handle_nav_query_param()
-    inject_home_grid_css()
-    # force_desktop_layout_on_mobile()
-    
     st.markdown("# Home")
     fe.header_with_logo(user['account_name'], user['account_balance'], st.session_state.profile_img)
-
-    
     st.markdown("---")
-    #ACTION BUTTONS (force desktop-like row on mobile)
-    st.markdown('<div class="action-row">', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns(3, gap="small")
+
+    # ACTION BUTTONS
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         st.image("logo_path/to_bank.png", width=50)
-        if st.button("To OPay", key="btn_to_opay", use_container_width=False):
+        if st.button("To OPay", key="btn_to_opay"):
             go_to("to_opay")
 
     with col2:
         st.image("logo_path/to_credit.png", width=50)
-        if st.button("To Bank", key="btn_to_bank", use_container_width=False):
+        if st.button("To Bank", key="btn_to_bank"):
             go_to("transfer")
 
     with col3:
         st.image("logo_path/to_withdrawal.png", width=50)
-        if st.button("Withdraw", key="btn_withdraw", use_container_width=False):
+        if st.button("Withdraw", key="btn_withdraw"):
             go_to("withdraw")
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("---")
 
-
-    #ICON GRID
+    # ICON GRID 
+    # ICON GRID
     icons = [
         ("Airtime", "airtime"),
         ("Data", "data"),
@@ -519,14 +398,12 @@ def home_page(user):
         ("More", "more")
     ]
 
-    st.markdown('<div class="icon-row">', unsafe_allow_html=True)
-    cols = st.columns(4, gap="small")
+    cols = st.columns(4)
 
-    
     for idx, (label, page_name) in enumerate(icons):
         with cols[idx % 4]:
             st.image(f"logo_path/{label}.png", width=45)
-            if st.button(label, key=f"btn_{label}", use_container_width=False):
+            if st.button(label, key=f"btn_{label}"):
                 go_to(page_name)
 
 
@@ -536,7 +413,7 @@ def home_page(user):
     fe.transactions_list(txns)
 
 
-#PAGES
+# ---------------- PAGES ----------------
 def to_opay(user):
     back_to_home()
     st.title("Send to OPay")
@@ -548,7 +425,7 @@ def to_opay(user):
 
         if send:
             with st.spinner("Validating. Please wait..."):
-                time.sleep(4)  #simulate network / DB delay
+                time.sleep(4)  # simulate network / DB delay
                 st.success("Transfer to OPay Successful!")
                 st.balloons()
 
@@ -560,7 +437,7 @@ def transfer_page(user):
     back_to_home()
     st.title("Transfer to Bank")
 
-    #FORM
+    # -------- FORM --------
     with st.form("bank_transfer_form"):
         rcvr_acc = st.text_input("Account Number")
         amt = st.number_input("Amount", min_value=0.0)
@@ -569,11 +446,11 @@ def transfer_page(user):
 
         if done:
             if amt > 0:
-                #PERFORM TRANSFER
+                # ---- PERFORM TRANSFER ----
                 transfer(user["account_num"], rcvr_acc, amt, txt)
                 with st.spinner("Sending. Please wait..."):
-                    time.sleep(4)  #simulate network / DB delay
-                    #STORE RECEIPT DATA IN SESSION
+                    time.sleep(4)  # simulate network / DB delay
+                    # ---- STORE RECEIPT DATA IN SESSION ----
                     st.session_state.transfer_receipt = {
                         "ref": f"DB-{uuid.uuid4().hex[:10].upper()}",
                         "time": datetime.now().strftime("%d %b %Y, %I:%M %p"),
@@ -590,7 +467,7 @@ def transfer_page(user):
             else:
                 st.warning("⚠ Transfer Amount must be more than 0")
 
-    #RECEIPT (OUTSIDE FORM)
+    # -------- RECEIPT (OUTSIDE FORM) --------
     if "transfer_receipt" in st.session_state:
         r = st.session_state.transfer_receipt
 
@@ -635,7 +512,7 @@ Thank you for banking with Diamond Bank
             unsafe_allow_html=True
         )
 
-        #DOWNLOAD BUTTON
+        # ---- DOWNLOAD BUTTON (NOW LEGAL) ----
         st.download_button(
             label="📄 Download Receipt",
             data=receipt_text,
@@ -664,12 +541,12 @@ def get_profile_image():
 
 
 def profile(user):
-    #Extract from user dict
+    # Extract from user dict
     username = user.get("account_name")
     balance = user.get("account_balance", 0.0)
     tier = user.get("account_tier", "Basic")
     acc_limit = user.get("account_limit", "₦200,000")
-        #INIT PROFILE IMAGE
+        # ---------------- INIT PROFILE IMAGE (RUN ONCE) ----------------
     if "profile_img" not in st.session_state:
         img_from_db = user.get("profile_img")
 
@@ -678,7 +555,7 @@ def profile(user):
         else:
             st.session_state.profile_img = fe.img_converter(blank_profile_img)
     
-    
+    # ---------------- CSS ----------------
     st.markdown("""
     <style>
     .profile-card {
@@ -751,7 +628,7 @@ def profile(user):
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    #IMAGE UPLOAD / CAPTURE
+    # ---------------- IMAGE UPLOAD / CAPTURE ----------------
     st.markdown("### Update Profile Photo")
 
     tab1, tab2 = st.tabs(["📁 Upload", "📷 Camera"])
@@ -774,7 +651,7 @@ def profile(user):
             # st.rerun()
     st.write("---")
 
-    #ACCOUNT STATS
+    # ---------------- ACCOUNT STATS ----------------
     st.markdown("### Account Overview")
 
     c1, c2, c3 = st.columns(3)
@@ -814,7 +691,7 @@ def profile(user):
 
     st.write("---")
 
-    #ACTIONS
+    # ---------------- ACTIONS ----------------
     st.markdown("### Account Actions")
 
     if st.button("📄 View Transaction History"):
@@ -830,7 +707,7 @@ def profile(user):
 
 
 
-#APP FLOW
+# ---------------- APP FLOW ----------------
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 if 'user' not in st.session_state:
@@ -842,7 +719,7 @@ if 'page' not in st.session_state:
 
 
 
-#PROFILE IMAGE SESSION INIT
+# 🔑 PROFILE IMAGE SESSION INIT
 # if "profile_img" not in st.session_state:
 #     img_from_db = user.get("profile_img")
 
@@ -942,7 +819,7 @@ elif nav == "Logout":
     st.session_state.logged_in = False
     st.session_state.user = None
     st.session_state.page = "home"
-    #RESET PROFILE IMAGE
+    # 🔁 RESET PROFILE IMAGE
     st.session_state.profile_img = fe.img_converter(blank_profile_img)
     
     st.info("Logged out.")
