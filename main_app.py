@@ -476,7 +476,7 @@ def home_page(user):
 
     handle_nav_query_param()
     inject_home_grid_css()
-    force_desktop_layout_on_mobile()
+    # force_desktop_layout_on_mobile()
     
     st.markdown("# Home")
     fe.header_with_logo(user['account_name'], user['account_balance'], st.session_state.profile_img)
@@ -489,17 +489,17 @@ def home_page(user):
 
     with col1:
         st.image("logo_path/to_bank.png", width=50)
-        if st.button("To OPay", key="btn_to_opay", use_container_width=True):
+        if st.button("To OPay", key="btn_to_opay", use_container_width=False):
             go_to("to_opay")
 
     with col2:
         st.image("logo_path/to_credit.png", width=50)
-        if st.button("To Bank", key="btn_to_bank", use_container_width=True):
+        if st.button("To Bank", key="btn_to_bank", use_container_width=False):
             go_to("transfer")
 
     with col3:
         st.image("logo_path/to_withdrawal.png", width=50)
-        if st.button("Withdraw", key="btn_withdraw", use_container_width=True):
+        if st.button("Withdraw", key="btn_withdraw", use_container_width=False):
             go_to("withdraw")
 
     st.markdown("</div>", unsafe_allow_html=True)
