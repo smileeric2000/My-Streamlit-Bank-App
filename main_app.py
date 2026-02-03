@@ -19,44 +19,58 @@ import re
 
 blank_profile_img = r"C:\Users\USER\data_science\bank_project\blank_profile.jpeg"
 
-def inject_responsive_css():
-    st.markdown("""
-    <style>
-    @media (max-width: 900px) {
+import streamlit as st
 
-      /* Streamlit columns row wrapper (the flex is often on the immediate child) */
-      div[data-testid="stHorizontalBlock"] > div,
-      div[data-testid="stColumns"] > div {
-        display: flex !important;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        gap: 0.6rem !important;
-        -webkit-overflow-scrolling: touch;
-      }
+def force_desktop_layout_on_mobile():
+    st.markdown(
+        """
+        <style>
+        /* Remove extra side padding so we get more usable width */
+        .block-container {
+            padding-top: 1.2rem;
+            padding-bottom: 1.2rem;
+        }
 
-      /* IMPORTANT: override Streamlit mobile "full width" column behavior */
-      div[data-testid="stHorizontalBlock"] div[data-testid="column"],
-      div[data-testid="stColumns"] div[data-testid="column"] {
-        width: auto !important;
-        flex: 0 0 auto !important;
-        min-width: 240px !important;  /* forces horizontal row, scrolls if needed */
-      }
+        /* MOBILE: keep rows in one line + scale down to fit */
+        @media (max-width: 768px) {
 
-      /* Make buttons fit nicely inside smaller columns */
-      div[data-testid="stButton"] > button {
-        width: 100% !important;
-        font-size: 0.85rem !important;
-        padding: 0.45rem 0.55rem !important;
-        white-space: nowrap !important;
-      }
+          /* Keep column rows from stacking */
+          div[data-testid="stHorizontalBlock"]{
+            flex-wrap: nowrap !important;
+            gap: 0.55rem !important;
+          }
 
-      img {
-        max-width: 100% !important;
-        height: auto !important;
-      }
-    }
-    </style>
-    """, unsafe_allow_html=True)
+          /* Let columns shrink instead of forcing wrap */
+          div[data-testid="column"]{
+            min-width: 0 !important;
+            flex: 1 1 0 !important;
+          }
+
+          /* Scale the whole page down so 3/4 columns still fit */
+          .block-container{
+            transform: scale(0.85);
+            transform-origin: top left;
+            width: calc(100% / 0.85);
+          }
+
+          /* Buttons smaller so they don't force wrap */
+          button[kind]{
+            padding: 0.35rem 0.5rem !important;
+            font-size: 0.78rem !important;
+            line-height: 1.05 !important;
+            white-space: nowrap !important;
+          }
+
+          /* Images don't overflow their column */
+          img{
+            max-width: 100% !important;
+            height: auto !important;
+          }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
 st.set_page_config(page_title="Diamond Bank (Demo)", layout="wide", page_icon=":bank:")
 
@@ -83,7 +97,7 @@ def back_to_home():
 # ------------------------------------------------
 
 fe.inject_global_css()
-inject_responsive_css()
+force_desktop_layout_on_mobile()
 
 
 #HELPERS
@@ -402,7 +416,68 @@ def more_page(user):
 
 
 #_______ HOME PAGE ____________
+
+
+def inject_home_grid_css():
+    st.markdown("""
+    <style>
+    .db-row {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      overflow-x: auto;
+      padding: 6px 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .db-card {
+      flex: 0 0 auto;
+      min-width: 140px;
+      border-radius: 14px;
+      padding: 12px 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.18);
+      backdrop-filter: blur(8px);
+      color: white;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .db-card:hover { transform: translateY(-1px); }
+    .db-card img { width: 38px; height: 38px; object-fit: contain; display:block; margin: 0 auto 8px; }
+    .db-card .lbl { font-size: 0.9rem; font-weight: 600; white-space: nowrap; }
+
+    .db-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 12px;
+      width: 100%;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @media (max-width: 640px){
+      .db-grid {
+        grid-template-columns: repeat(4, 120px); /* stays 4 across, scrolls horizontally */
+      }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+def handle_nav_query_param():
+    nav = st.query_params.get("nav")
+    if nav:
+        st.query_params.clear()
+        go_to(nav)
+
+
 def home_page(user):
+
+    handle_nav_query_param()
+    inject_home_grid_css()
+    force_desktop_layout_on_mobile()
+    
     st.markdown("# Home")
     fe.header_with_logo(user['account_name'], user['account_balance'], st.session_state.profile_img)
 
