@@ -17,7 +17,7 @@ import re
 
 #importlib.reload(Utils)
 
-blank_profile_img = r"C:\Users\USER\data_science\bank_project\blank_profile.jpeg"
+blank_profile_img = r"\blank_profile.jpeg"
 
 import streamlit as st
 
@@ -487,7 +487,7 @@ def home_page(user):
     st.markdown('<div class="action-row">', unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3, gap="small")
 
-    with col1:
+    with col11:
         st.image("logo_path/to_bank.png", width=50)
         if st.button("To OPay", key="btn_to_opay", use_container_width=True):
             go_to("to_opay")
